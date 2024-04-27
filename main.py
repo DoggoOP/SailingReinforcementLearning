@@ -4,11 +4,8 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold
 import numpy as np
 
-# Assuming SailingEnv is the custom environment class defined earlier
 from sailing_env import SailingEnv
 
-# Replace 'your_sailing_env_file' with the actual name of the python file containing the SailingEnv class
-# Example lift_calcs data, replace with your actual data
 lift_calcs = [
     (5, 0., -52.5, 12031.3), (5, 0., -50., 11129.5), (5, 0., -47.5, 10462.4),
     (5, 0., -45., 9340.7), (5, 0., -42.5, 8479.94), (5, 0., -40., 8070.49),
@@ -69,7 +66,6 @@ model = PPO.load("ppo_sailing", env=env)  # Make sure to specify the env
 #     verbose=1
 # )
 
-# Define how often you want to check the mean reward
 update_interval = 100000
 mean_reward = -np.inf
 
