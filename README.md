@@ -8,10 +8,12 @@ Key Features:
 Dynamic Wind Field: Simulates varying wind conditions that affect the sailing strategy.
 Lift Calculations: Uses predefined lift coefficients for different sail settings and angles relative to the wind.
 Penalty System: Implements penalties for inefficient tacking and sailing out of bounds, encouraging the agent to learn optimal navigation paths.
-The Training
+Reward System: Rewards the agent for the velocity projection made towards the goal at each move and gives a huge reward for reaching the goal.
+
+# The Training
 Training processes are implemented using the Stable Baselines3 library, specifically the Proximal Policy Optimization (PPO) algorithm, which is well-suited for environments with continuous action spaces. The training script train_model.py manages the setup, execution, and saving of the RL model.
 
-# Training Workflow:
+Training Workflow:
 Environment Setup: Instantiation of the SailingEnv with appropriate parameters.
 Model Configuration: Configuration of the PPO model with specified hyperparameters.
 Training Loop: The model trains over several episodes, with periodic evaluations to assess performance and improvements.
