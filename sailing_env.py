@@ -336,7 +336,7 @@ class SailingEnv(gym.Env):
 
         if distance_to_goal <= 5:
             info['goal_reached'] = True
-            goal_reward = 50000 - 15*self.time_taken  # Example scoring mechanism
+            goal_reward = 50000 - 10*self.time_taken  # Example scoring mechanism
             print("Goal reached at position", self.goal_position, "in", self.time_taken, "time steps", "with reward", goal_reward, "wind speed", self.base_wind_speed)
             return True, info, goal_reward
 
