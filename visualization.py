@@ -1,13 +1,10 @@
-from stable_baselines3 import PPO
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.evaluation import evaluate_policy
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import numpy as np
+from sailing_env import SailingEnv
+from stable_baselines3 import PPO
 from matplotlib.cm import viridis, plasma
 from matplotlib.colors import Normalize
-import numpy as np
-
-# Assuming SailingEnv is the custom environment class defined earlier
-from sailing_env import SailingEnv
 
 lift_calcs = [
     (5, 0., -52.5, 12031.3), (5, 0., -50., 11129.5), (5, 0., -47.5, 10462.4),
@@ -51,48 +48,72 @@ lift_calcs = [
 ]
 
 
+def run_visualization():
+    env = SailingEnv(lift_calcs=lift_calcs, goal_position=[500, 950])
+    model = PPO.load("ppo_sailing")
+    steps=0
 
-env = SailingEnv(lift_calcs=lift_calcs, goal_position=[500, 950])
-model = PPO.load("ppo_sailing")
+    obs = env.reset()
+    path = [env.current_position.copy()]
 
-obs = env.reset()
-path = [env.current_position.copy()]
-print(f"Initial position: {env.current_position}")
+    fig, ax = plt.subplots(figsize=(10, 10))
+    line, = ax.plot([], [], '-o', color='blue', label='Path', linewidth=2, markersize=5)
+    agent_marker, = ax.plot([], [], 'o', color='red', label='Agent', markersize=10)
+    start_marker, = ax.plot(env.initial_position[0], env.initial_position[1], 'go', markersize=10, label='Start')
+    goal_marker, = ax.plot(env.goal_position[0], env.goal_position[1], 'ro', markersize=10, label='Goal')
+    ax.set_xlim([0, 1000])
+    ax.set_ylim([0, 1000])
+    ax.set_title('Sailing Path Visualization')
+    ax.set_xlabel('X Position')
+    ax.set_ylabel('Y Position')
+    ax.legend(loc='upper right')
 
-for i in range(500):  # Adjust the number of steps if necessary
-    action, _states = model.predict(obs, deterministic=True)
-    obs, rewards, dones, info = env.step(action)
-    wind_speed, wind_direction = env.get_wind_at_position(env.current_position)
-    path.append(env.current_position.copy())
-    print(f"Step {i}: Position: {env.current_position}, Action: {action}, Reward: {rewards}, Done: {dones}, Info: {info}, Wind Speed: {wind_speed}, Wind Direction: {wind_direction}")
-    if dones:
-        print(f"Goal reached at step {i+1}")
-        break
+    norm = Normalize(vmin=5, vmax=20)
+    grid_size = 50
+    quivers = []
+    for x in range(0, 1000, grid_size):
+        for y in range(0, 1000, grid_size):
+            wind_speed, wind_direction = env.get_wind_at_position([x + grid_size/2, y + grid_size/2])
+            dx = wind_speed * np.cos(wind_direction) * 10
+            dy = wind_speed * np.sin(wind_direction) * 10
+            color = plasma(norm(wind_speed))
+            quiver = ax.quiver(x + grid_size/2, y + grid_size/2, dx, dy, color=color, alpha=0.5)
+            quivers.append(quiver)
 
-# Visualization code
-fig, ax = plt.subplots(figsize=(10, 10))
-norm = Normalize(vmin=5, vmax=20)
+    def update(frame):
+        nonlocal obs, path, steps
+        steps+=1
+        action, _states = model.predict(obs, deterministic=True)
+        obs, rewards, dones, info = env.step(action)
+        path.append(env.current_position.copy())
+        line.set_data([p[0] for p in path], [p[1] for p in path])
+        agent_marker.set_data(env.current_position[0], env.current_position[1])
+        wind_speed, wind_direction = env.get_wind_at_position(env.current_position)
+        print(f"Step: {steps}, Position: {env.current_position}, Action: {action}, Reward: {rewards}, Done: {dones}, Info: {info}, Wind Speed: {wind_speed}, Wind Direction: {wind_direction}")
+        if dones:
+            # Reset the environment and path
+            obs = env.reset()
+            path = [env.current_position.copy()]
+            line.set_data([], [])
+            agent_marker.set_data([], [])
+            # Reset goal and start positions
+            start_marker.set_data(env.initial_position[0], env.initial_position[1])
+            goal_marker.set_data(env.goal_position[0], env.goal_position[1])
+            # Reset wind field
+            for quiver in quivers:
+                quiver.remove()
+            quivers.clear()
+            for x in range(0, 1000, grid_size):
+                for y in range(0, 1000, grid_size):
+                    wind_speed, wind_direction = env.get_wind_at_position([x + grid_size/2, y + grid_size/2])
+                    dx = wind_speed * np.cos(wind_direction) * 10
+                    dy = wind_speed * np.sin(wind_direction) * 10
+                    color = plasma(norm(wind_speed))
+                    quiver = ax.quiver(x + grid_size/2, y + grid_size/2, dx, dy, color=color, alpha=0.5)
+                    quivers.append(quiver)
+        return line, agent_marker, goal_marker, start_marker, quivers
 
-x_path, y_path = zip(*path)
-ax.plot(x_path, y_path, '-o', color='blue', label='Path')
-ax.plot(env.initial_position[0], env.initial_position[1], 'go', markersize=10, label='Start')
-ax.plot(env.goal_position[0], env.goal_position[1], 'ro', markersize=10, label='Goal')
+    anim = FuncAnimation(fig, update, frames=np.arange(500), repeat=True, interval=50)  # 50 ms per frame
+    plt.show()
 
-# Plotting wind vectors
-grid_size = 50
-half_grid = grid_size / 2
-for x in range(0, 1000, grid_size):
-    for y in range(0, 1000, grid_size):
-        wind_speed, wind_direction = env.get_wind_at_position([x + half_grid, y + half_grid])
-        dx = wind_speed * np.cos(wind_direction) * 10
-        dy = wind_speed * np.sin(wind_direction) * 10
-        color = plasma(norm(wind_speed))
-        ax.quiver(x + half_grid, y + grid_size, dx, dy, color=color, alpha=0.5)
-
-ax.set_xlim([0, 1000])
-ax.set_ylim([0, 1000])
-ax.set_title('Sailing Path Visualization')
-ax.set_xlabel('X Position')
-ax.set_ylabel('Y Position')
-ax.legend()
-plt.show()
+run_visualization()
