@@ -49,12 +49,16 @@ lift_calcs = [
     (20, 0., -45., 161270.), (20, 0., -42.5, 146233.), (20, 0., -40., 134972.),
     (20, 0., -37.5, 119316.)
 ]
-# Initial goal position
+
+
+
 goal_position = [500, 950]
 
 # Create the environment
 env = SailingEnv(lift_calcs=lift_calcs, goal_position=goal_position)
 
+# Load the previously saved model
+model = PPO.load("ppo_sailing", env=env)  # Make sure to specify the env
 # Initialize the agent
 # model = PPO(
 #     "MlpPolicy",
@@ -64,7 +68,6 @@ env = SailingEnv(lift_calcs=lift_calcs, goal_position=goal_position)
 #     gamma=1, # Discount factor
 #     verbose=1
 # )
-model = PPO.load("ppo_sailing")
 
 # Define how often you want to check the mean reward
 update_interval = 100000
@@ -81,10 +84,7 @@ try:
 
 except Exception as e:
     print(f"An error occurred: {e}")
-    model.save("ppo_sailing")
 
 finally:
     # Save the trained model
-    model.save("ppo_sailing")
-    
-model.save("ppo_sailing")
+    model.save("ppo_sailing_final")
