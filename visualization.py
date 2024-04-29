@@ -77,7 +77,7 @@ def run_visualization():
             dx = wind_speed * np.cos(wind_direction) * 10
             dy = wind_speed * np.sin(wind_direction) * 10
             color = plasma(norm(wind_speed))
-            quiver = ax.quiver(x + grid_size/2, y + grid_size/2, dx, dy, color=color, alpha=0.5)
+            quiver = ax.quiver(x + grid_size/2, y + grid_size, dx, dy, color=color, alpha=0.5)
             quivers.append(quiver)
 
     def update(frame):
@@ -109,11 +109,11 @@ def run_visualization():
                     dx = wind_speed * np.cos(wind_direction) * 10
                     dy = wind_speed * np.sin(wind_direction) * 10
                     color = plasma(norm(wind_speed))
-                    quiver = ax.quiver(x + grid_size/2, y + grid_size/2, dx, dy, color=color, alpha=0.5)
+                    quiver = ax.quiver(x + grid_size/2, y + grid_size, dx, dy, color=color, alpha=0.5)
                     quivers.append(quiver)
         return line, agent_marker, goal_marker, start_marker, quivers
 
-    anim = FuncAnimation(fig, update, frames=np.arange(500), repeat=True, interval=50)  # 50 ms per frame
+    anim = FuncAnimation(fig, update, frames=np.arange(500), repeat=True, interval=0.01)  # 50 ms per frame
     plt.show()
 
 run_visualization()

@@ -1,5 +1,5 @@
 import numpy as np
-import gym
+import gym, random
 from gym import spaces
 from math import sqrt, radians, cos, sin, pi, degrees, e
 from collections import defaultdict
@@ -64,6 +64,7 @@ class SailingEnv(gym.Env):
         self.current_position = self.initial_position.copy()
         self.base_direction = radians(270)
         self.wind_field = None
+        self.wind_chunk_size = 5
         self.been_on_layline = False
         self.base_wind_speed = None
         self.on_layline = False  # Track whether the layline has been reached
@@ -190,12 +191,12 @@ class SailingEnv(gym.Env):
         vmg = np.dot(movement_vector, goal_direction)
 
         # Time penalty for movement
-        time_taken_for_movement = 500000 / lift
+        time_taken_for_movement = 100000 / lift
 
         # Compute reward based on VMG and distance to the goal
-        reward = vmg * 1000  # Scale VMG contribution
+        reward = vmg * 1000 - 5*time_taken_for_movement # Scale VMG contribution
         if new_position[0] < 0 or new_position[0] > 1000 or new_position[1] < 0 or new_position[1] > 1000:
-            reward -= 5000  # Penalty for going out of bounds
+            reward -= 10000  # Penalty for going out of bounds
 
         if goal_distance <= 5:
             reward += 10000  # Large reward for reaching the goal
@@ -223,8 +224,8 @@ class SailingEnv(gym.Env):
     def generate_wind_field(self, min_strength=7, max_strength=18):
         self.base_wind_speed = np.random.randint(min_strength, max_strength)  # Base wind speed
         self.wind_field = np.zeros((self.grid_size, self.grid_size, 2))  # Initialize wind field
-        for i in range(self.grid_size):
-            for j in range(self.grid_size):
+        for i in range(self.wind_chunk_size):
+            for j in range(self.wind_chunk_size):
                 variation = radians(np.random.randint(-20, 20))
                 speed_variation = np.random.randint(-3, 4)
                 self.wind_field[i, j] = [self.base_wind_speed + speed_variation, self.base_direction + variation]
@@ -244,7 +245,7 @@ class SailingEnv(gym.Env):
         self.been_on_layline = False
         self.incorrect_actions = 0
         self.generate_wind_field()
-        self.on_starboard = True
+        self.on_starboard = random.choice([True, False])
         # Set new goal position if provided, otherwise keep existing one
         if new_goal_position is None:
             self.goal_position = np.array([np.random.randint(50,950), np.random.randint(850,950)], dtype=np.float32)
@@ -336,7 +337,7 @@ class SailingEnv(gym.Env):
 
         if distance_to_goal <= 5:
             info['goal_reached'] = True
-            goal_reward = 50000 - 10*self.time_taken  # Example scoring mechanism
+            goal_reward = 50000 - 1.5*self.base_wind_speed*self.time_taken  # Example scoring mechanism
             print("Goal reached at position", self.goal_position, "in", self.time_taken, "time steps", "with reward", goal_reward, "wind speed", self.base_wind_speed)
             return True, info, goal_reward
 
@@ -346,9 +347,9 @@ class SailingEnv(gym.Env):
             info['out_of_bounds'] = True
             print("Out of bounds at position", self.current_position)
             if boundary_type == 'side':
-                penalty = -10000  # More severe penalty for side boundaries
+                penalty = -50000  # More severe penalty for side boundaries
             else:
-                penalty = -2000  # Lesser penalty for top boundary
+                penalty = -10000  # Lesser penalty for top boundary
             return True, info, penalty
 
         return done, info, reward
@@ -393,14 +394,14 @@ class SailingEnv(gym.Env):
         time_taken_for_movement = 100000 / lift
         self.time_taken += time_taken_for_movement
         
-        return vmg * 10 if current_distance < previous_distance else -500
+        return vmg * 10 - 5*time_taken_for_movement if current_distance < previous_distance else -500
 
 
     def get_wind_at_position(self, position):
         if self.wind_field is None:
             raise Exception("Wind field is not initialized.")
-        grid_x = int(position[0] // (1000 // self.grid_size))
-        grid_y = int(position[1] // (1000 // self.grid_size))
+        grid_x = int(position[0] // (1000 // self.wind_chunk_size))
+        grid_y = int(position[1] // (1000 // self.wind_chunk_size))
         grid_x = max(min(grid_x, self.wind_field.shape[0] - 1), 0)
         grid_y = max(min(grid_y, self.wind_field.shape[1] - 1), 0)
         return self.wind_field[grid_x, grid_y]
