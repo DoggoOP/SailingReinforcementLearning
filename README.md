@@ -1,6 +1,8 @@
 # SailingReinforcementLearning
 This repository contains a Reinforcement Learning project focused on simulating and optimizing sailing strategies using environmental data and physics-based simulations. The project utilizes data from computational studies discussed in a detailed computational essay available at this [link](https://community.wolfram.com/groups/-/m/t/2963984). Readers are highly encouraged to review the essay to understand the derivation of lift values and the decision-making process behind the actions within the simulated environment.
 
+![Animated GIF Maker (1)](https://github.com/DoggoOP/SailingReinforcementLearning/assets/80930499/3c499d5d-1371-4372-bb8c-f09c55a393ee)
+
 # The Environment
 The SailingEnv class, defined in sailing_env.py, encapsulates the sailing simulation environment. It integrates realistic sailing dynamics, including wind effects, boat lift calculations, and penalty handling for suboptimal movements. The environment is built on top of the OpenAI Gym interface, making it compatible with various reinforcement learning algorithms provided by libraries like Stable Baselines3.
 
@@ -13,7 +15,6 @@ Reward System: Rewards the agent for the velocity projection made towards the go
 # The Training
 Training processes are implemented using the Stable Baselines3 library, specifically the Proximal Policy Optimization (PPO) algorithm, which is well-suited for environments with continuous action spaces. The training script train_model.py manages the setup, execution, and saving of the RL model.
 
-Training Workflow:
 Environment Setup: Instantiation of the SailingEnv with appropriate parameters.
 Model Configuration: Configuration of the PPO model with specified hyperparameters.
 Training Loop: The model trains over several episodes, with periodic evaluations to assess performance and improvements.
