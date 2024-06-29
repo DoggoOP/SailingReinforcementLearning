@@ -399,7 +399,7 @@ class SailingEnv(gym.Env):
         time_taken_for_movement = 100000 / lift
         self.time_taken += time_taken_for_movement
         
-        return vmg * 10 - 5*time_taken_for_movement if current_distance < previous_distance else -500
+        return vmg * 50 - 1*time_taken_for_movement if current_distance < previous_distance else -500
 
 
     def get_wind_at_position(self, position):

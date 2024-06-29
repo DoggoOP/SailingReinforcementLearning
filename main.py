@@ -55,16 +55,16 @@ goal_position = [500, 950]
 env = SailingEnv(lift_calcs=lift_calcs, goal_position=goal_position)
 
 # Load the previously saved model
-model = PPO.load("ppo_sailing", env=env)  # Make sure to specify the env
+# model = PPO.load("ppo_sailing", env=env)  # Make sure to specify the env
 # Initialize the agent
-# model = PPO(
-#     "MlpPolicy",
-#     env,
-#     learning_rate=0.003, # Adjust learning rate as needed
-#     ent_coef=0.01, # Increasing entropy coefficient for more exploration
-#     gamma=1, # Discount factor
-#     verbose=1
-# )
+model = PPO(
+    "MlpPolicy",
+    env,
+    learning_rate=0.003, # Adjust learning rate as needed
+    ent_coef=0.1, # Increasing entropy coefficient for more exploration
+    gamma=1, # Discount factor
+    verbose=1
+)
 
 update_interval = 100000
 mean_reward = -np.inf
