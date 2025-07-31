@@ -6,7 +6,7 @@ This repository contains a Reinforcement Learning project focused on simulating 
 # The Environment
 The SailingEnv class, defined in sailing_env.py, encapsulates the sailing simulation environment. It integrates realistic sailing dynamics, including wind effects, boat lift calculations, and penalty handling for suboptimal movements. The environment is built on top of the OpenAI Gym interface, making it compatible with various reinforcement learning algorithms provided by libraries like Stable Baselines3.
 
-Key Features:
+## Key Features
 Dynamic Wind Field: Simulates varying wind conditions that affect the sailing strategy.
 
 Lift Calculations: Uses predefined lift coefficients for different sail settings and angles relative to the wind.
