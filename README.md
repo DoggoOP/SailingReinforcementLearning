@@ -8,8 +8,11 @@ The SailingEnv class, defined in sailing_env.py, encapsulates the sailing simula
 
 Key Features:
 Dynamic Wind Field: Simulates varying wind conditions that affect the sailing strategy.
+
 Lift Calculations: Uses predefined lift coefficients for different sail settings and angles relative to the wind.
+
 Penalty System: Implements penalties for inefficient tacking and sailing out of bounds, encouraging the agent to learn optimal navigation paths.
+
 Reward System: Rewards the agent for the velocity projection made towards the goal at each move and gives a huge reward for reaching the goal.
 
 # The Training
